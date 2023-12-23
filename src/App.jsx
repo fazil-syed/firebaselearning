@@ -4,14 +4,19 @@ import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from "firebase
 import { auth, db, storage } from "./config/firebase"
 import { getDownloadURL, listAll, ref, uploadBytes } from "firebase/storage"
 import { v4 } from "uuid"
-
+import {addClass, addStudent, addTeacher, enrollStudent} from "./config/helpers"
 function App() {
-  const [users,setUsers] = useState([])
-  const [type,setType] = useState()
+  
   const [name,setName] = useState()
   const [usn,setUSN] = useState()
   const [email,setEmail] = useState()
   const [phone,setNumber] = useState()
+  const [date,setDate] = useState()
+  const [classname,setClassname] = useState()
+  const [teacherId,setTeacherId] = useState()
+  const [classId,setClassId] = useState()
+  const [studentId,setStudentId] = useState()
+
 
 
   const [fileUpload,setFileUpload] = useState(null)
@@ -35,53 +40,7 @@ function App() {
     })
   }
 
-  const getUsers = async ()=>{
-    try {
-      const data = await getDocs(usersCollectionRef)
-      const filteredData = data.docs.map(doc=>({...doc.data(),id:doc.id}))
-      setUsers(filteredData)
-    } catch (error) {
-      console.error(error)
-    }
-  }
-  useEffect(()=>{
-    getUsers()
-    getFileList()
-  },[])
-
-  const deleteUser = async(id)=>{
-    try {
-      const userDoc = doc(db,"users",id)
-      await deleteDoc(userDoc)
-    } catch (error) {
-      console.error(error)
-    }
-  }
-  const handleSubmit = async()=>{
-    try {
-      await addDoc(usersCollectionRef,{
-        email,
-        name,
-        phone,
-        type,
-        usn,
-        userId : auth?.currentUser?.uid
-
-      })
-      getUsers()
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
-  const updateUser = async (id)=>{
-    try {
-      const userDoc = doc(db,"users",id)
-      await updateDoc(userDoc,{name})
-    } catch (error) {
-      console.error(error)
-    }
-}
+  
 
 const uploadFile = async ()=>{
   if(!fileUpload) return;
@@ -100,16 +59,34 @@ const uploadFile = async ()=>{
 
     <Auth/>
     <br />
-    <h2>Input </h2>
+    <h2>Input Student </h2>
     <div>
-      <input placeholder="Type" onChange={(e)=>setType(e.target.value)}/><br /><br />
-      <input placeholder="Name" onChange={(e)=>setName(e.target.value)}/><br /><br />
-      <input placeholder="USN" onChange={(e)=>setUSN(e.target.value)}/><br /><br />
       <input placeholder="Email" onChange={(e)=>setEmail(e.target.value)}/><br /><br />
+      <input placeholder="Name" onChange={(e)=>setName(e.target.value)}/><br /><br />
       <input placeholder="Number" onChange={(e)=>setNumber(e.target.value)}/><br /><br />
-      <button onClick={handleSubmit}> Submit</button>
+      <input placeholder="USN" onChange={(e)=>setUSN(e.target.value)}/><br /><br />
+      <button onClick={()=>addStudent(email,phone,name,usn) }> Submit</button>
     </div>
+    <h2>Input Teacher </h2>
     <div>
+      <input placeholder="Email" onChange={(e)=>setEmail(e.target.value)}/><br /><br />
+      <input placeholder="Name" onChange={(e)=>setName(e.target.value)}/><br /><br />
+      <input placeholder="Number" onChange={(e)=>setNumber(e.target.value)}/><br /><br />
+      <button onClick={()=>addTeacher(email,phone,name) }> Submit</button>
+    </div>
+    <h2>Input Class </h2>
+    <div>
+      <input placeholder="Name" onChange={(e)=>setClassname(e.target.value)}/><br /><br />
+      <input placeholder="Teacher Id" onChange={(e)=>setTeacherId(e.target.value)}/><br /><br />
+      <button onClick={()=>addClass(classname,teacherId) }> Submit</button>
+    </div>
+    <h2>Enroll Student </h2>
+    <div>
+      <input placeholder="ClassId" onChange={(e)=>setClassId(e.target.value)}/><br /><br />
+      <input placeholder="Student Id" onChange={(e)=>setStudentId(e.target.value)}/><br /><br />
+      <button onClick={()=>enrollStudent(classId,studentId) }> Submit</button>
+    </div>
+    {/* <div>
     {users.map((user)=>(
       <div>
         <h1>{user.name}</h1>
@@ -118,7 +95,7 @@ const uploadFile = async ()=>{
         <button onClick={()=>updateUser(user.id)}>Update</button>
       </div>
     ))}
-    </div>  
+    </div>   */}
 
     <div>
       <input type="file" onChange={(e)=>setFileUpload(e.target.files[0])} />
